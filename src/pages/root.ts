@@ -58,13 +58,15 @@ function addLinks() {
   }
 }
 
-export async function main() {
-  if (!matchUrl("/")) {
-    return;
+export async function main(path: string): Promise<boolean> {
+  if (!matchUrl(path, "/")) {
+    return false;
   }
   modLogger.log("Started");
   await waitForLoad();
   modLogger.log("Page loaded, executing script...");
 
   addLinks();
+
+  return true;
 }

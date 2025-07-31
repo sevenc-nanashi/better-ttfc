@@ -1,8 +1,8 @@
-export function matchUrl(pattern: string): boolean {
+export function matchUrl(path: string, pattern: string): boolean {
   const regex = new RegExp(
-    `^${pattern.replaceAll(".", "\\.").replaceAll("*", ".*")}$`,
+    `^${pattern.replaceAll(".", "\\.").replaceAll("*", ".*")}(?:\\?.*)?$`,
   );
-  return regex.test(window.location.pathname);
+  return regex.test(path);
 }
 
 export function maybeGetElementsBySelector<T extends Element>(

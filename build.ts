@@ -12,6 +12,7 @@ export const build = async () => {
     updateURL: `https://raw.githubusercontent.com/sevenc-nanashi/${packageJson.name}/built/index.user.js`,
     downloadURL: `https://raw.githubusercontent.com/sevenc-nanashi/${packageJson.name}/built/index.user.js`,
     sandbox: "MAIN_WORLD",
+    "run-at": "document-body",
   };
   const banner = `// ==UserScript==\n${Object.keys(bannerMap)
     .map((key) => `// @${key} ${bannerMap[key]}`)
