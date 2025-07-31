@@ -9,10 +9,12 @@ import { baseLogger } from "../logger.ts";
 
 const modLogger = baseLogger.withTag("root");
 
+let loadInterval: ReturnType<typeof setInterval> | null = null;
+
 async function waitForLoad() {
   // div.noteの存在でページの読み込み完了を待つ
   const { promise, resolve } = Promise.withResolvers<void>();
-  setInterval(() => {
+  loadInterval = setInterval(() => {
     const maybeNote =
       document.querySelector<HTMLDivElement>("#top-view div.note");
     if (maybeNote) {
@@ -49,7 +51,6 @@ function addLinks() {
       "div.title-bar > span.h4",
       header,
     );
-    titleBar.innerHTML += " →";
     titleBar.addEventListener("click", () => {
       logger.log("Title bar clicked, opening flyer...");
       moreFlyer.click();
@@ -58,9 +59,9 @@ function addLinks() {
   }
 }
 
-export async function main(path: string): Promise<boolean> {
+export async function main(path: string): Promise<(() => void) | undefined> {
   if (!matchUrl(path, "/")) {
-    return false;
+    return undefined;
   }
   modLogger.log("Started");
   await waitForLoad();
@@ -68,5 +69,11 @@ export async function main(path: string): Promise<boolean> {
 
   addLinks();
 
-  return true;
+  return () => {
+    modLogger.log("Tearing down root script");
+    if (loadInterval) {
+      clearInterval(loadInterval);
+      loadInterval = null;
+    }
+  };
 }

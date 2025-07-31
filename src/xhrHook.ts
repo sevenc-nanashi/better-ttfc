@@ -184,9 +184,7 @@ async function startXhrWithResponseCallback(
     patch.readyState = 4; // DONE
     patch.response = buffer;
     patch.responseUrl = response.url;
-    modLogger.log(
-      `XMLHttpRequest completed with status: ${response.status}, response length: ${buffer.length}`,
-    );
+    modLogger.log(`Hook request completed with status: ${response.status}`);
     xhr.dispatchEvent(new Event("load"));
     xhr.dispatchEvent(new Event("readystatechange"));
     xhr.dispatchEvent(new Event("loadend"));

@@ -20,14 +20,7 @@ const pickupContentSchema = z.object({
 const originalNumContentPerPage = 10;
 const numContentPerPage = 50;
 
-export async function main(path: string): Promise<boolean> {
-  if (!matchUrl(path, "/pickup/[0-9]+")) {
-    return false;
-  }
-  modLogger.log("Started");
-  // await waitForLoad();
-  modLogger.log("Page loaded, executing script...");
-
+function setupHook() {
   insertXhrHook("pickup", (request) => {
     const url = new URL(request.url);
     if (
@@ -35,42 +28,58 @@ export async function main(path: string): Promise<boolean> {
       url.pathname.startsWith("/api/pc/pickup_content")
     ) {
       return async () => {
-        const params = new URLSearchParams(url.search);
-        params.set("number", numContentPerPage.toString());
-        const myRequest = new Request(
-          `${url.pathname}?${params.toString()}`,
-          request,
-        );
-        const response = await fetch(myRequest);
-        if (!response.ok) {
-          modLogger.warn(
-            `Failed to fetch pickup content: ${response.status} ${response.statusText}`,
-          );
-          return response;
-        }
-        const data = pickupContentSchema.parse(await response.clone().json());
-
-        const numPages = Math.ceil(data.total_count / numContentPerPage);
-        return Response.json(
-          {
-            pickup_name: data.pickup_name,
-            content_type: data.content_type,
-            total_count: numPages * originalNumContentPerPage,
-            content_list: data.content_list.map((content) => ({
-              content_id: content.content_id,
-              content_title: content.content_title,
-              thumbnail_url: content.thumbnail_url,
-            })),
-          },
-          {
-            headers: {
-              "Content-Type": "application/json; charset=utf-8",
-            },
-          },
-        );
+        return await handlePickupResponse(url, request);
       };
     }
   });
+}
 
-  return true;
+async function handlePickupResponse(
+  url: URL,
+  request: Request,
+): Promise<Response> {
+  const params = new URLSearchParams(url.search);
+  params.set("number", numContentPerPage.toString());
+  const myRequest = new Request(
+    `${url.pathname}?${params.toString()}`,
+    request,
+  );
+  const response = await fetch(myRequest);
+  if (!response.ok) {
+    modLogger.warn(
+      `Failed to fetch pickup content: ${response.status} ${response.statusText}`,
+    );
+    return response;
+  }
+  const data = pickupContentSchema.parse(await response.clone().json());
+
+  const numPages = Math.ceil(data.total_count / numContentPerPage);
+  return Response.json(
+    {
+      pickup_name: data.pickup_name,
+      content_type: data.content_type,
+      total_count: numPages * originalNumContentPerPage,
+      content_list: data.content_list.map((content) => ({
+        content_id: content.content_id,
+        content_title: content.content_title,
+        thumbnail_url: content.thumbnail_url,
+      })),
+    },
+    {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+    },
+  );
+}
+
+export async function main(path: string): Promise<(() => void) | undefined> {
+  if (!matchUrl(path, "/pickup/[0-9]+")) {
+    return undefined;
+  }
+  modLogger.log("Started");
+
+  setupHook();
+
+  return () => {};
 }

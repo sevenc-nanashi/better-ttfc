@@ -1,29 +1,44 @@
 import { baseLogger as modLogger } from "./logger.ts";
 import { main as rootMain } from "./pages/root.ts";
 import { main as pickupMain } from "./pages/pickup.ts";
+import { main as watchMain } from "./pages/watch.ts";
 
 const mains = {
   root: rootMain,
   pickup: pickupMain,
-} satisfies Record<string, (path: string) => Promise<boolean>>;
+  watch: watchMain,
+} satisfies Record<string, (path: string) => Promise<(() => void) | undefined>>;
 
+let tearDownPreviousMains: (() => void) | undefined;
 async function callPageMains(path: string) {
+  tearDownPreviousMains?.();
   modLogger.log("Navigation detected, calling scripts for path:", path);
 
-  const promises = Object.fromEntries(
+  const tearDowns = Object.fromEntries(
     await Promise.all(
       Object.entries(mains).map(async ([name, main]) => [
         name,
         await main(path),
       ]),
     ),
-  );
+  ) as Record<string, (() => void) | undefined>;
   modLogger.log(
     "Page scripts called",
-    Object.entries(promises)
+    Object.entries(tearDowns)
       .filter(([, result]) => result)
       .map(([name]) => name),
   );
+  tearDownPreviousMains = () => {
+    modLogger.log("Tearing down page scripts");
+    for (const [name, tearDown] of Object.entries(tearDowns)) {
+      if (tearDown) {
+        modLogger.log(`Tearing down ${name}`);
+        tearDown();
+      } else {
+        modLogger.warn(`No tear down function for ${name}`);
+      }
+    }
+  };
 }
 
 function insertNavigationHook() {
