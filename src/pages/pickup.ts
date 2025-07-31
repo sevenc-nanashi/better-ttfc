@@ -1,39 +1,59 @@
-import { insertStyle, matchUrl } from "../utils.ts";
+import {
+  getElementBySelector,
+  insertStyle,
+  matchUrl,
+  TeardownManager,
+  waitForElementBySelector,
+} from "../utils.ts";
 import { baseLogger } from "../logger.ts";
 import { insertXhrHook } from "../xhrHook.ts";
 import { z } from "zod";
 
 const modLogger = baseLogger.withTag("pickup");
 
-const teardowns: (() => void)[] = [];
+const teardowns = new TeardownManager(modLogger);
 
-function insertBetterPickupListStyle() {
+export async function insertBetterContentListStyle() {
   const clean = insertStyle(`
     .row:has(.card-flyer) {
       justify-content: center;
     }
     @media (min-width: 1400px) {
-      .col-md-five-1:has(.card-flyer) {
+      .col-md-five-1:where(:has(.card-flyer), .bttfc-content-dummy) {
         flex-basis: 15% !important;
       }
     }
     @media (min-width: 1600px) {
-      .col-md-five-1:has(.card-flyer) {
+      .col-md-five-1:where(:has(.card-flyer), .bttfc-content-dummy) {
         flex-basis: 12.5% !important;
       }
     }
     @media (min-width: 2000px) {
-      .col-md-five-1:has(.card-flyer) {
+      .col-md-five-1:where(:has(.card-flyer), .bttfc-content-dummy) {
         flex-basis: 10% !important;
       }
     }
   `);
-  teardowns.push(() => {
+  const contentList = await waitForElementBySelector<HTMLDivElement>(
+    ".row:has(.card-flyer)",
+  );
+  const elements: HTMLDivElement[] = [];
+  for (let i = 0; i < 10; i++) {
+    const dummy = document.createElement("div");
+    dummy.className = "col-md-five-1 bttfc-content-dummy";
+    elements.push(dummy);
+    contentList.appendChild(dummy);
+  }
+  return () => {
     clean();
-    modLogger.log("Cleaned up better content list styles");
-  });
+    for (const element of elements) {
+      if (element.parentElement) {
+        element.parentElement.removeChild(element);
+      }
+    }
+    modLogger.log("Removed better content list style");
+  };
 }
-
 
 const contentSchema = z.object({
   content_id: z.number(),
@@ -110,14 +130,7 @@ export async function main(path: string): Promise<(() => void) | undefined> {
   modLogger.log("Started");
 
   setupHook();
-  insertBetterPickupListStyle();
+  teardowns.add(await insertBetterContentListStyle());
 
-  return () => {
-    modLogger.log("Tearing down pickup script");
-    for (const teardown of teardowns) {
-      teardown();
-    }
-    teardowns.length = 0; // Clear teardowns
-    modLogger.log("Pickup script torn down");
-  };
+  return () => teardowns.clear();
 }

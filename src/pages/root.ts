@@ -4,12 +4,13 @@ import {
   insertStyle,
   matchUrl,
   maybeGetElementBySelector,
+  TeardownManager,
 } from "../utils.ts";
 import { baseLogger } from "../logger.ts";
 
 const modLogger = baseLogger.withTag("root");
 
-const teardowns: (() => void)[] = [];
+const teardowns = new TeardownManager(modLogger);
 
 async function waitForLoad() {
   // div.noteの存在でページの読み込み完了を待つ
@@ -23,7 +24,7 @@ async function waitForLoad() {
       console.warn("Note element not found, retrying...");
     }
   }, 100);
-  teardowns.push(() => {
+  teardowns.add(() => {
     clearInterval(loadInterval);
     modLogger.log("Load interval cleared");
   });
@@ -32,7 +33,7 @@ async function waitForLoad() {
 
 function addLinks() {
   const logger = modLogger.withTag("addLinks");
-  teardowns.push(
+  teardowns.add(
     insertStyle(`
       .bttfc-header:hover {
         text-decoration: underline;
@@ -75,11 +76,5 @@ export async function main(path: string): Promise<(() => void) | undefined> {
 
   addLinks();
 
-  return () => {
-    modLogger.log("Tearing down root script");
-    for (const teardown of teardowns) {
-      teardown();
-    }
-    modLogger.log("Root script torn down");
-  };
+  return () => teardowns.clear();
 }

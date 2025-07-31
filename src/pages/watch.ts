@@ -1,9 +1,12 @@
-import { matchUrl } from "../utils.ts";
+import { matchUrl, TeardownManager } from "../utils.ts";
 import { baseLogger } from "../logger.ts";
+import { insertBetterContentListStyle } from "./pickup.ts";
 
 const modLogger = baseLogger.withTag("watch");
 
 const watchedKey = "bttfcWatched";
+
+const teardowns = new TeardownManager(modLogger);
 
 const originalSessionStorageSetItem =
   sessionStorage.setItem.bind(sessionStorage);
@@ -52,6 +55,7 @@ export async function main(path: string): Promise<(() => void) | undefined> {
   }
   loadWatchData();
   setupTeeWatchData();
+  teardowns.add(await insertBetterContentListStyle());
 
-  return () => {};
+  return () => teardowns.clear();
 }
