@@ -1,7 +1,7 @@
 {
-  "name": "your-userscript-name",
-  "displayName": "Your Userscript Name",
-  "description": "Your Userscript Description",
+  "name": "better-ttfc",
+  "displayName": "Better TTFC",
+  "description": "東映特撮ファンクラブのPC版サイトをより便利にするためのユーザースクリプト。",
   "version": "0.0.1",
   "author": "Nanashi. <https://sevenc7c.com>",
   "devDependencies": {
@@ -13,7 +13,7 @@
   "peerDependencies": {
     "typescript": "^5.8.3"
   },
-  "homepage": "https://github.com/sevenc-nanashi/your-userscript-name",
+  "homepage": "https://github.com/sevenc-nanashi/better-ttfc",
   "scripts": {
     "dev": "bun run ./dev.ts",
     "build": "bun run ./build.ts"
