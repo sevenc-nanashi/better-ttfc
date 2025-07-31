@@ -9,12 +9,12 @@ import { baseLogger } from "../logger.ts";
 
 const modLogger = baseLogger.withTag("root");
 
-let loadInterval: ReturnType<typeof setInterval> | null = null;
+const teardowns: (() => void)[] = [];
 
 async function waitForLoad() {
   // div.noteの存在でページの読み込み完了を待つ
   const { promise, resolve } = Promise.withResolvers<void>();
-  loadInterval = setInterval(() => {
+  const loadInterval = setInterval(() => {
     const maybeNote =
       document.querySelector<HTMLDivElement>("#top-view div.note");
     if (maybeNote) {
@@ -23,17 +23,23 @@ async function waitForLoad() {
       console.warn("Note element not found, retrying...");
     }
   }, 100);
+  teardowns.push(() => {
+    clearInterval(loadInterval);
+    modLogger.log("Load interval cleared");
+  });
   return promise;
 }
 
 function addLinks() {
   const logger = modLogger.withTag("addLinks");
-  insertStyle(`
-    .bttfc-header:hover {
-      text-decoration: underline;
-      cursor: pointer;
-    }
-  `);
+  teardowns.push(
+    insertStyle(`
+      .bttfc-header:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    `),
+  );
 
   for (const header of getElementsBySelector<HTMLDivElement>(
     "div.mb-3:has(> .title-bar):not(:has(> .bttfc-header))",
@@ -71,9 +77,9 @@ export async function main(path: string): Promise<(() => void) | undefined> {
 
   return () => {
     modLogger.log("Tearing down root script");
-    if (loadInterval) {
-      clearInterval(loadInterval);
-      loadInterval = null;
+    for (const teardown of teardowns) {
+      teardown();
     }
+    modLogger.log("Root script torn down");
   };
 }

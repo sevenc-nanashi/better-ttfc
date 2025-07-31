@@ -40,9 +40,13 @@ export function getElementBySelector<T extends Element>(
   return element;
 }
 
-export function insertStyle(css: string): HTMLStyleElement {
+export function insertStyle(css: string): () => void {
   const style = document.createElement("style");
   style.textContent = css;
   document.head.appendChild(style);
-  return style;
+  return () => {
+    if (style.parentElement) {
+      style.parentElement.removeChild(style);
+    }
+  };
 }

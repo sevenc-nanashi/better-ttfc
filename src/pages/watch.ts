@@ -53,5 +53,5 @@ export async function main(path: string): Promise<(() => void) | undefined> {
   loadWatchData();
   setupTeeWatchData();
 
-  return () => {}
+  return () => {};
 }

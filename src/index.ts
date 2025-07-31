@@ -11,8 +11,9 @@ const mains = {
 
 let tearDownPreviousMains: (() => void) | undefined;
 async function callPageMains(path: string) {
+  const logger = modLogger.withTag("callPageMains");
   tearDownPreviousMains?.();
-  modLogger.log("Navigation detected, calling scripts for path:", path);
+  logger.log("Navigation detected, calling scripts for path:", path);
 
   const tearDowns = Object.fromEntries(
     await Promise.all(
@@ -22,20 +23,18 @@ async function callPageMains(path: string) {
       ]),
     ),
   ) as Record<string, (() => void) | undefined>;
-  modLogger.log(
+  logger.log(
     "Page scripts called",
     Object.entries(tearDowns)
       .filter(([, result]) => result)
       .map(([name]) => name),
   );
   tearDownPreviousMains = () => {
-    modLogger.log("Tearing down page scripts");
+    logger.log("Tearing down page scripts");
     for (const [name, tearDown] of Object.entries(tearDowns)) {
       if (tearDown) {
-        modLogger.log(`Tearing down ${name}`);
+        logger.log(`Tearing down ${name}`);
         tearDown();
-      } else {
-        modLogger.warn(`No tear down function for ${name}`);
       }
     }
   };
