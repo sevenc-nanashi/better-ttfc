@@ -1,0 +1,25 @@
+{
+  "name": "your-userscript-name",
+  "displayName": "Your Userscript Name",
+  "description": "Your Userscript Description",
+  "version": "0.0.1",
+  "author": "Nanashi. <https://sevenc7c.com>",
+  "devDependencies": {
+    "@biomejs/biome": "2.1.3",
+    "@types/bun": "^1.2.19",
+    "chokidar": "^4.0.3",
+    "esbuild": "^0.25.8"
+  },
+  "peerDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "homepage": "https://github.com/sevenc-nanashi/your-userscript-name",
+  "scripts": {
+    "dev": "bun run ./dev.ts",
+    "build": "bun run ./build.ts"
+  },
+  "type": "module",
+  "dependencies": {
+    "consola": "^3.4.2"
+  }
+}
