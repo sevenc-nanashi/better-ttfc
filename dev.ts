@@ -1,5 +1,5 @@
-import { build } from "./build.ts";
 import chokidar from "chokidar";
+import { build } from "./build.ts";
 
 chokidar.watch("src", {}).on("all", () => {
   build();

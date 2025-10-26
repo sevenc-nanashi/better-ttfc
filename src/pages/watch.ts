@@ -1,5 +1,5 @@
-import { matchUrl, TeardownManager } from "../utils.ts";
 import { baseLogger } from "../logger.ts";
+import { matchUrl, TeardownManager } from "../utils.ts";
 import { insertBetterContentListStyle } from "./pickup.ts";
 
 const modLogger = baseLogger.withTag("watch");

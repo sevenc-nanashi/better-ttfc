@@ -1,3 +1,4 @@
+import { baseLogger } from "../logger.ts";
 import {
   getElementBySelector,
   getElementsBySelector,
@@ -5,8 +6,8 @@ import {
   matchUrl,
   maybeGetElementBySelector,
   TeardownManager,
+  waitForElementBySelector,
 } from "../utils.ts";
-import { baseLogger } from "../logger.ts";
 
 const modLogger = baseLogger.withTag("root");
 
@@ -14,21 +15,7 @@ const teardowns = new TeardownManager(modLogger);
 
 async function waitForLoad() {
   // div.noteの存在でページの読み込み完了を待つ
-  const { promise, resolve } = Promise.withResolvers<void>();
-  const loadInterval = setInterval(() => {
-    const maybeNote =
-      document.querySelector<HTMLDivElement>("#top-view div.note");
-    if (maybeNote) {
-      resolve();
-    } else {
-      console.warn("Note element not found, retrying...");
-    }
-  }, 100);
-  teardowns.add(() => {
-    clearInterval(loadInterval);
-    modLogger.log("Load interval cleared");
-  });
-  return promise;
+  await waitForElementBySelector<HTMLDivElement>("#top-view div.note");
 }
 
 function addLinks() {
@@ -71,10 +58,11 @@ export async function main(path: string): Promise<(() => void) | undefined> {
     return undefined;
   }
   modLogger.log("Started");
-  await waitForLoad();
-  modLogger.log("Page loaded, executing script...");
+  await waitForLoad().then(() => {
+    modLogger.log("Page loaded, executing script...");
 
-  addLinks();
+    addLinks();
+  });
 
   return () => teardowns.clear();
 }

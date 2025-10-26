@@ -16,7 +16,9 @@
   "homepage": "https://github.com/sevenc-nanashi/better-ttfc",
   "scripts": {
     "dev": "bun run ./dev.ts",
-    "build": "bun run ./build.ts"
+    "build": "bun run ./build.ts",
+    "lint": "biome check",
+    "lint:fix": "biome check --write"
   },
   "type": "module",
   "dependencies": {

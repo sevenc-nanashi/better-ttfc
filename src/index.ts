@@ -1,6 +1,6 @@
 import { baseLogger as modLogger } from "./logger.ts";
-import { main as rootMain } from "./pages/root.ts";
 import { main as pickupMain } from "./pages/pickup.ts";
+import { main as rootMain } from "./pages/root.ts";
 import { main as watchMain } from "./pages/watch.ts";
 
 const mains = {

@@ -1,13 +1,12 @@
+import { z } from "zod";
+import { baseLogger } from "../logger.ts";
 import {
-  getElementBySelector,
   insertStyle,
   matchUrl,
   TeardownManager,
   waitForElementBySelector,
 } from "../utils.ts";
-import { baseLogger } from "../logger.ts";
 import { insertXhrHook } from "../xhrHook.ts";
-import { z } from "zod";
 
 const modLogger = baseLogger.withTag("pickup");
 
