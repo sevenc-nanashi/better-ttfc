@@ -1,5 +1,6 @@
 import { setLogger } from "@sevenc-nanashi/xhr-hook";
 import { baseLogger as modLogger } from "./logger.ts";
+import { main as allMain } from "./pages/all.ts";
 import { main as pickupMain } from "./pages/pickup.ts";
 import { main as rootMain } from "./pages/root.ts";
 import { main as watchMain } from "./pages/watch.ts";
@@ -8,6 +9,7 @@ const mains = {
   root: rootMain,
   pickup: pickupMain,
   watch: watchMain,
+  all: allMain,
 } satisfies Record<string, (path: string) => Promise<(() => void) | undefined>>;
 
 let tearDownPreviousMains: (() => void) | undefined;
