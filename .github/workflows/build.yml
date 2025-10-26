@@ -57,4 +57,4 @@ jobs:
       - name: Switch to main branch
         run: |
           git switch main -f
-          git push
+          git push --atomic origin main v${{ github.event.inputs.name }}
