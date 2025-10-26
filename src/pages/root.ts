@@ -54,7 +54,7 @@ function addLinks() {
 }
 
 export async function main(path: string): Promise<(() => void) | undefined> {
-  if (!matchUrl(path, "/")) {
+  if (!(matchUrl(path, "/") || matchUrl(path, "/top"))) {
     return undefined;
   }
   modLogger.log("Started");

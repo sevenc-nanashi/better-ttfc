@@ -1,3 +1,4 @@
+import { insertXhrHook } from "@sevenc-nanashi/xhr-hook";
 import { z } from "zod";
 import { baseLogger } from "../logger.ts";
 import {
@@ -6,7 +7,6 @@ import {
   TeardownManager,
   waitForElementBySelector,
 } from "../utils.ts";
-import { insertXhrHook } from "../xhrHook.ts";
 
 const modLogger = baseLogger.withTag("pickup");
 

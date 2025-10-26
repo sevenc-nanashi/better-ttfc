@@ -1,3 +1,4 @@
+import { setLogger } from "@sevenc-nanashi/xhr-hook";
 import { baseLogger as modLogger } from "./logger.ts";
 import { main as pickupMain } from "./pages/pickup.ts";
 import { main as rootMain } from "./pages/root.ts";
@@ -55,6 +56,7 @@ function insertNavigationHook() {
 
 async function main() {
   modLogger.log("Started");
+  setLogger(modLogger.withTag("xhr-hook"));
 
   insertNavigationHook();
 

@@ -4,25 +4,26 @@
   "description": "東映特撮ファンクラブのPC版サイトをより便利にするためのユーザースクリプト。",
   "version": "0.0.1",
   "author": "Nanashi. <https://sevenc7c.com>",
-  "devDependencies": {
-    "@biomejs/biome": "2.1.3",
-    "@types/bun": "^1.2.19",
-    "chokidar": "^4.0.3",
-    "esbuild": "^0.25.8"
-  },
-  "peerDependencies": {
-    "typescript": "^5.8.3"
-  },
   "homepage": "https://github.com/sevenc-nanashi/better-ttfc",
+  "type": "module",
   "scripts": {
     "dev": "bun run ./dev.ts",
     "build": "bun run ./build.ts",
     "lint": "biome check",
     "lint:fix": "biome check --write"
   },
-  "type": "module",
   "dependencies": {
+    "@sevenc-nanashi/xhr-hook": "^0.1.2",
     "consola": "^3.4.2",
-    "zod": "^4.0.14"
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.0",
+    "@types/bun": "^1.3.1",
+    "chokidar": "^4.0.3",
+    "esbuild": "^0.25.11"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
   }
 }
