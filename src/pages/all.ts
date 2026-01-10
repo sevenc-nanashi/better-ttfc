@@ -1,9 +1,5 @@
 import { baseLogger } from "../logger.ts";
-import {
-  getElementBySelector,
-  TeardownManager,
-  waitForElementBySelector,
-} from "../utils.ts";
+import { maybeGetElementBySelector, TeardownManager } from "../utils.ts";
 
 const modLogger = baseLogger.withTag("all");
 
@@ -13,7 +9,9 @@ function setTitle() {
   const logger = modLogger.withTag("setTitle");
   // diplayは本当にそういうIDなので注意
   const pageTitle =
-    getElementBySelector<HTMLTitleElement>("#diplay-head .h2").textContent;
+    maybeGetElementBySelector<HTMLTitleElement>(
+      "#diplay-head .h2",
+    )?.textContent;
   if (pageTitle) {
     const newTitle = `${pageTitle} | 東映特撮ファンクラブ`;
     if (document.title !== newTitle) {
