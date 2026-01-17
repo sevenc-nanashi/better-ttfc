@@ -90,3 +90,14 @@ export class TeardownManager {
     logger.log("All teardowns completed");
   }
 }
+
+export function isChildrenOf(child: Node, parent: Node): boolean {
+  let current: Node | null = child;
+  while (current) {
+    if (current === parent) {
+      return true;
+    }
+    current = current.parentNode;
+  }
+  return false;
+}
