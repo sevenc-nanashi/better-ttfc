@@ -84,6 +84,14 @@ function addKeyboardShortcuts() {
       logger.log("Seeking backward 10 seconds");
       event.preventDefault();
       video.currentTime -= 10;
+    } else if (event.code === "ArrowUp") {
+      logger.log("Increasing volume by 10%");
+      event.preventDefault();
+      video.volume = Math.min(video.volume + 0.1, 1);
+    } else if (event.code === "ArrowDown") {
+      logger.log("Decreasing volume by 10%");
+      event.preventDefault();
+      video.volume = Math.max(video.volume - 0.1, 0);
     } else if (event.code === "Space") {
       logger.log("Toggling play/pause");
       event.preventDefault();
