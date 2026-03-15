@@ -1,7 +1,7 @@
 {
   "name": "better-ttfc",
   "displayName": "Better TTFC",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "東映特撮ファンクラブのPC版サイトをより便利にするためのユーザースクリプト。",
   "homepage": "https://github.com/sevenc-nanashi/better-ttfc",
   "author": "Nanashi. <https://sevenc7c.com>",
@@ -31,13 +31,11 @@
     "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@10.32.1",
-  "pnpm": {
-    "patchedDependencies": {
-      "vite-plugin-monkey@7.1.9": "patches/vite-plugin-monkey@7.1.9.patch"
-    },
-    "overrides": {
-      "vite": "npm:@voidzero-dev/vite-plus-core@latest",
-      "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
-    }
+  "overrides": {
+    "vite": "npm:@voidzero-dev/vite-plus-core@latest",
+    "vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+  },
+  "patchedDependencies": {
+    "vite-plugin-monkey@7.1.9": "patches/vite-plugin-monkey@7.1.9.patch"
   }
 }
