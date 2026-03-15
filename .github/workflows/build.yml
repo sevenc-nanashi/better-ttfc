@@ -30,7 +30,7 @@ jobs:
       - name: Build
         run: |
           bun run build
-          cp dist/index.user.js /tmp/index.user.js
+          cp dist/better-ttfc.user.js /tmp/index.user.js
 
       - name: Commit
         run: |
