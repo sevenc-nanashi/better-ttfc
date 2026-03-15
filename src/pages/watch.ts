@@ -1,12 +1,16 @@
 import { baseLogger } from "../logger.ts";
 import {
   getElementBySelector,
+  insertStyle,
   isChildrenOf,
   matchUrl,
   maybeGetElementBySelector,
   TeardownManager,
 } from "../utils.ts";
 import { insertBetterContentListStyle } from "./pickup.ts";
+import van from "vanjs-core";
+
+const { button, span } = van.tags;
 
 const modLogger = baseLogger.withTag("watch");
 
@@ -101,6 +105,11 @@ function addKeyboardShortcuts() {
       event.preventDefault();
       const fullscreenElement = getElementBySelector<HTMLButtonElement>(".vjs-fullscreen-control");
       fullscreenElement.click();
+    } else if (event.code === "KeyT") {
+      logger.log("Toggling browser fullscreen mode");
+      event.preventDefault();
+      const videoWrapper = getElementBySelector("#video-wrapper");
+      videoWrapper.classList.toggle("bttfc-using-browser-fullscreen-mode");
     } else if (event.code === "KeyM") {
       logger.log("Toggling mute");
       event.preventDefault();
@@ -108,6 +117,50 @@ function addKeyboardShortcuts() {
       muteElement.click();
     }
   }
+}
+
+function addTheaterModeButton() {
+  const logger = modLogger.withTag("addTheaterModeButton");
+  const controlBar = maybeGetElementBySelector(
+    ".vjs-control-bar:not(.bttfc-browser-fullscreen-mode-button)",
+  );
+  if (!controlBar) {
+    return;
+  }
+  const qualitySelector = maybeGetElementBySelector(".vjs-quality-selector");
+  if (!qualitySelector) {
+    // 画質選択ボタンは非同期的に追加されるので、存在しない場合はスキップして次の変化を待つ
+    return;
+  }
+  const browserFullscreenModeButton = button(
+    {
+      class: "vjs-icon-picture-in-picture-exit vjs-control vjs-button",
+      type: "button",
+      "aria-disabled": "false",
+      title: "Toggle Browser Fullscreen Mode",
+      onclick: () => {
+        logger.log("Toggling browser fullscreen mode");
+        const videoWrapper = getElementBySelector("#video-wrapper");
+        videoWrapper.classList.toggle("bttfc-using-browser-fullscreen-mode");
+      },
+    },
+    span({ class: "vjs-icon-placeholder", "aria-hidden": "true" }),
+    span({ class: "vjs-control-text", "aria-live": "polite" }, "Theater Mode"),
+  );
+  controlBar.insertBefore(browserFullscreenModeButton, qualitySelector.nextSibling);
+
+  controlBar.classList.add("bttfc-browser-fullscreen-mode-button");
+  logger.log("Added browser fullscreen mode button to control bar");
+}
+
+function addBrowserFullscreenModeLoop() {
+  const observer = new MutationObserver(() => {
+    addTheaterModeButton();
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+  return () => {
+    observer.disconnect();
+  };
 }
 
 export async function main(path: string): Promise<(() => void) | undefined> {
@@ -118,6 +171,17 @@ export async function main(path: string): Promise<(() => void) | undefined> {
   setupTeeWatchData();
   teardowns.add(await insertBetterContentListStyle());
   teardowns.add(addKeyboardShortcuts());
+  teardowns.add(addBrowserFullscreenModeLoop());
+  teardowns.add(
+    insertStyle(`
+      #video-wrapper.bttfc-using-browser-fullscreen-mode {
+        background: #000;
+        position:fixed !important;
+        inset: 0;
+        z-index:999;
+      }
+    `),
+  );
 
   return () => teardowns.clear();
 }

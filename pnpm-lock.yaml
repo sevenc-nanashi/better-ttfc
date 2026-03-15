@@ -39,8 +39,11 @@ importers:
       esbuild:
         specifier: ^0.25.12
         version: 0.25.12
+      vanjs-core:
+        specifier: ^1.6.0
+        version: 1.6.0
       vite:
-        specifier: npm:@voidzero-dev/vite-plus-core@^0.1.11
+        specifier: npm:@voidzero-dev/vite-plus-core@latest
         version: '@voidzero-dev/vite-plus-core@0.1.11(@types/node@25.5.0)(esbuild@0.25.12)(typescript@5.9.3)'
       vite-plugin-monkey:
         specifier: ^7.1.9
@@ -979,6 +982,9 @@ packages:
   undici-types@7.18.2:
     resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
+  vanjs-core@1.6.0:
+    resolution: {integrity: sha512-4KM9mKEji7woioytMNKQ2XrqD31ykG9vde3N1F/gyJJ0oaOSohdeaN2o4UC4Ndu3Raj1SEXWvW7k4etZI8Ovjw==}
+
   vite-plugin-monkey@7.1.9:
     resolution: {integrity: sha512-kYtcRH8DsbrwfugrviYRuk50weY5yyVKcuGRkjUSc7mK0uPFtOHK8sUSEecpiS9725IF/4uyum8bYHs7dswDBg==}
     peerDependencies:
@@ -1658,6 +1664,8 @@ snapshots:
   typescript@5.9.3: {}
 
   undici-types@7.18.2: {}
+
+  vanjs-core@1.6.0: {}
 
   vite-plugin-monkey@7.1.9(patch_hash=5cddcdb786122412ea30778e8a9cf2b9f917cc1ae2aa7764ff91549b285daaf6)(@voidzero-dev/vite-plus-core@0.1.11(@types/node@25.5.0)(esbuild@0.25.12)(typescript@5.9.3))(postcss@8.5.8):
     dependencies:

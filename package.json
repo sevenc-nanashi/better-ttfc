@@ -16,6 +16,7 @@
   "dependencies": {
     "@sevenc-nanashi/xhr-hook": "^0.1.2",
     "consola": "^3.4.2",
+    "vanjs-core": "^1.6.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
