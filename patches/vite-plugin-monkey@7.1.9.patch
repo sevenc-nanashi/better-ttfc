@@ -1,0 +1,60 @@
+diff --git a/dist/node/index.mjs b/dist/node/index.mjs
+index f1bbc09f87d86ccea535502f860abc29f04e567a..e9d51d9f74ebf15c3a90771be4b50c0ed98cc419 100644
+--- a/dist/node/index.mjs
++++ b/dist/node/index.mjs
+@@ -851,7 +851,7 @@ var cssFactory = (getOption) => {
+       option = await getOption();
+       return {
+         build: {
+-          rollupOptions: {
++          rolldownOptions: {
+             external: [cssModuleId]
+           }
+         }
+@@ -988,7 +988,6 @@ var buildBundleFactory = (getOption) => {
+       const buildResult = await build({
+         logLevel: "error",
+         configFile: false,
+-        esbuild: false,
+         plugins: [
+           {
+             name: "monkey:mock",
+@@ -1053,7 +1052,7 @@ var buildBundleFactory = (getOption) => {
+           write: false,
+           minify: false,
+           target: "esnext",
+-          rollupOptions: {
++          rolldownOptions: {
+             external: Object.keys(option.globalsPkg2VarName),
+             output: {
+               globals: option.globalsPkg2VarName
+@@ -1185,11 +1184,6 @@ var configFactory = (getOption) => {
+             [option.clientAlias]: "vite-plugin-monkey/dist/client"
+           }
+         },
+-        esbuild: {
+-          supported: {
+-            "top-level-await": true
+-          }
+-        },
+         build: {
+           assetsInlineLimit: Number.MAX_SAFE_INTEGER,
+           chunkSizeWarningLimit: Number.MAX_SAFE_INTEGER,
+@@ -1199,7 +1193,7 @@ var configFactory = (getOption) => {
+           minify: userConfig.build?.minify ?? false,
+           cssMinify: userConfig.build?.cssMinify ?? true,
+           sourcemap: false,
+-          rollupOptions: {
++          rolldownOptions: {
+             input: option.entry
+           }
+         }
+@@ -1354,7 +1348,7 @@ var externalGlobalsFactory = (getOption) => {
+       }
+       return {
+         build: {
+-          rollupOptions: {
++          rolldownOptions: {
+             external: Object.keys(option.globalsPkg2VarName)
+           }
+         }

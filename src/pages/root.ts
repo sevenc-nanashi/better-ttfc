@@ -41,10 +41,7 @@ function addLinks() {
       continue;
     }
 
-    const titleBar = getElementBySelector<HTMLSpanElement>(
-      "div.title-bar > span.h4",
-      header,
-    );
+    const titleBar = getElementBySelector<HTMLSpanElement>("div.title-bar > span.h4", header);
     titleBar.addEventListener("click", () => {
       logger.log("Title bar clicked, opening flyer...");
       moreFlyer.click();

@@ -1,9 +1,7 @@
 import type { ConsolaInstance } from "consola";
 
 export function matchUrl(path: string, pattern: string): boolean {
-  const regex = new RegExp(
-    `^${pattern.replaceAll(".", "\\.").replaceAll("*", ".*")}(?:\\?.*)?$`,
-  );
+  const regex = new RegExp(`^${pattern.replaceAll(".", "\\.").replaceAll("*", ".*")}(?:\\?.*)?$`);
   return regex.test(path);
 }
 

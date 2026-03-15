@@ -19,12 +19,7 @@ async function callPageMains(path: string) {
   logger.log("Navigation detected, calling scripts for path:", path);
 
   const tearDowns = Object.fromEntries(
-    await Promise.all(
-      Object.entries(mains).map(async ([name, main]) => [
-        name,
-        await main(path),
-      ]),
-    ),
+    await Promise.all(Object.entries(mains).map(async ([name, main]) => [name, await main(path)])),
   ) as Record<string, (() => void) | undefined>;
   logger.log(
     "Page scripts called",
@@ -46,10 +41,10 @@ async function callPageMains(path: string) {
 function insertNavigationHook() {
   const logger = modLogger.withTag("insertNavigationHook");
   // popstateだと動かないので、無理やりフックを追加
-  const originalPushState = history.pushState;
+  const originalPushState = history.pushState.bind(history);
   const pushStateHook = (...args: Parameters<typeof originalPushState>) => {
     logger.log("History pushState called", args);
-    callPageMains(args[2] as string);
+    void callPageMains(args[2] as string);
     return originalPushState.apply(history, args);
   };
   history.pushState = pushStateHook;
@@ -62,7 +57,7 @@ async function main() {
 
   insertNavigationHook();
 
-  callPageMains(location.pathname);
+  await callPageMains(location.pathname);
 }
 
-main();
+void main();

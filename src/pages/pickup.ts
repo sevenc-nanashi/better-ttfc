@@ -1,12 +1,7 @@
 import { insertXhrHook } from "@sevenc-nanashi/xhr-hook";
 import { z } from "zod";
 import { baseLogger } from "../logger.ts";
-import {
-  insertStyle,
-  matchUrl,
-  TeardownManager,
-  waitForElementBySelector,
-} from "../utils.ts";
+import { insertStyle, matchUrl, TeardownManager, waitForElementBySelector } from "../utils.ts";
 
 const modLogger = baseLogger.withTag("pickup");
 
@@ -33,9 +28,7 @@ export async function insertBetterContentListStyle() {
       }
     }
   `);
-  const contentList = await waitForElementBySelector<HTMLDivElement>(
-    ".row:has(.card-flyer)",
-  );
+  const contentList = await waitForElementBySelector<HTMLDivElement>(".row:has(.card-flyer)");
   const elements: HTMLDivElement[] = [];
   for (let i = 0; i < 10; i++) {
     const dummy = document.createElement("div");
@@ -72,10 +65,7 @@ const numContentPerPage = 50;
 function setupHook() {
   insertXhrHook("pickup", (request) => {
     const url = new URL(request.url);
-    if (
-      request.method === "GET" &&
-      url.pathname.startsWith("/api/pc/pickup_content")
-    ) {
+    if (request.method === "GET" && url.pathname.startsWith("/api/pc/pickup_content")) {
       return async () => {
         return await handlePickupResponse(url, request);
       };
@@ -83,21 +73,13 @@ function setupHook() {
   });
 }
 
-async function handlePickupResponse(
-  url: URL,
-  request: Request,
-): Promise<Response> {
+async function handlePickupResponse(url: URL, request: Request): Promise<Response> {
   const params = new URLSearchParams(url.search);
   params.set("number", numContentPerPage.toString());
-  const myRequest = new Request(
-    `${url.pathname}?${params.toString()}`,
-    request,
-  );
+  const myRequest = new Request(`${url.pathname}?${params.toString()}`, request);
   const response = await fetch(myRequest);
   if (!response.ok) {
-    modLogger.warn(
-      `Failed to fetch pickup content: ${response.status} ${response.statusText}`,
-    );
+    modLogger.warn(`Failed to fetch pickup content: ${response.status} ${response.statusText}`);
     return response;
   }
   const data = pickupContentSchema.parse(await response.clone().json());

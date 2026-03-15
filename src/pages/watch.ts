@@ -14,8 +14,7 @@ const watchedKey = "bttfcWatched";
 
 const teardowns = new TeardownManager(modLogger);
 
-const originalSessionStorageSetItem =
-  sessionStorage.setItem.bind(sessionStorage);
+const originalSessionStorageSetItem = sessionStorage.setItem.bind(sessionStorage);
 function setupTeeWatchData() {
   const logger = modLogger.withTag("setupTeeWatchData");
   if (sessionStorage.bttfcHooked) {
@@ -72,10 +71,7 @@ function addKeyboardShortcuts() {
     if (!isChildrenOf(event.target as Node, moviePlayer)) {
       return;
     }
-    const video = getElementBySelector<HTMLVideoElement>(
-      "#movie-player_html5_api",
-      moviePlayer,
-    );
+    const video = getElementBySelector<HTMLVideoElement>("#movie-player_html5_api", moviePlayer);
     if (event.code === "ArrowRight") {
       logger.log("Seeking forward 10 seconds");
       event.preventDefault();
@@ -96,22 +92,19 @@ function addKeyboardShortcuts() {
       logger.log("Toggling play/pause");
       event.preventDefault();
       if (video.paused) {
-        video.play();
+        void video.play();
       } else {
         video.pause();
       }
     } else if (event.code === "KeyF") {
       logger.log("Toggling fullscreen");
       event.preventDefault();
-      const fullscreenElement = getElementBySelector<HTMLButtonElement>(
-        ".vjs-fullscreen-control",
-      );
+      const fullscreenElement = getElementBySelector<HTMLButtonElement>(".vjs-fullscreen-control");
       fullscreenElement.click();
     } else if (event.code === "KeyM") {
       logger.log("Toggling mute");
       event.preventDefault();
-      const muteElement =
-        getElementBySelector<HTMLButtonElement>(".vjs-mute-control");
+      const muteElement = getElementBySelector<HTMLButtonElement>(".vjs-mute-control");
       muteElement.click();
     }
   }
