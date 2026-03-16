@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Better TTFC
-// @version      0.1.2
+// @version      0.1.3
 // @author       Nanashi. <https://sevenc7c.com>
 // @description  東映特撮ファンクラブのPC版サイトをより便利にするためのユーザースクリプト。
 // @homepage     https://github.com/sevenc-nanashi/better-ttfc
@@ -4449,6 +4449,9 @@ var _ZodString = $constructor("_ZodString", (inst, def) => {
 	var modLogger = baseLogger.withTag("watch");
 	var watchedKey = "bttfcWatched";
 	var teardowns = new TeardownManager(modLogger);
+	function toggleFullscreen() {
+		getElementBySelector("main").classList.toggle("bttfc-using-browser-fullscreen-mode");
+	}
 	var originalSessionStorageSetItem = sessionStorage.setItem.bind(sessionStorage);
 	function setupTeeWatchData() {
 		const logger = modLogger.withTag("setupTeeWatchData");
@@ -4518,7 +4521,7 @@ var _ZodString = $constructor("_ZodString", (inst, def) => {
 			} else if (event.code === "KeyT") {
 				logger.log("Toggling browser fullscreen mode");
 				event.preventDefault();
-				getElementBySelector("#video-wrapper").classList.toggle("bttfc-using-browser-fullscreen-mode");
+				toggleFullscreen();
 			} else if (event.code === "KeyM") {
 				logger.log("Toggling mute");
 				event.preventDefault();
@@ -4539,7 +4542,7 @@ var _ZodString = $constructor("_ZodString", (inst, def) => {
 			title: "Toggle Browser Fullscreen Mode",
 			onclick: () => {
 				logger.log("Toggling browser fullscreen mode");
-				getElementBySelector("#video-wrapper").classList.toggle("bttfc-using-browser-fullscreen-mode");
+				toggleFullscreen();
 			}
 		}, span({
 			class: "vjs-icon-placeholder",
@@ -4572,7 +4575,7 @@ var _ZodString = $constructor("_ZodString", (inst, def) => {
 		teardowns.add(addKeyboardShortcuts());
 		teardowns.add(addBrowserFullscreenModeLoop());
 		teardowns.add(insertStyle(`
-      #video-wrapper.bttfc-using-browser-fullscreen-mode {
+      .bttfc-using-browser-fullscreen-mode #video-wrapper {
         background: #000;
         position:fixed !important;
         inset: 0;
