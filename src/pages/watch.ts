@@ -18,6 +18,11 @@ const watchedKey = "bttfcWatched";
 
 const teardowns = new TeardownManager(modLogger);
 
+function toggleFullscreen() {
+  const mainElement = getElementBySelector("main");
+  mainElement.classList.toggle("bttfc-using-browser-fullscreen-mode");
+}
+
 const originalSessionStorageSetItem = sessionStorage.setItem.bind(sessionStorage);
 function setupTeeWatchData() {
   const logger = modLogger.withTag("setupTeeWatchData");
@@ -108,8 +113,7 @@ function addKeyboardShortcuts() {
     } else if (event.code === "KeyT") {
       logger.log("Toggling browser fullscreen mode");
       event.preventDefault();
-      const videoWrapper = getElementBySelector("#video-wrapper");
-      videoWrapper.classList.toggle("bttfc-using-browser-fullscreen-mode");
+      toggleFullscreen();
     } else if (event.code === "KeyM") {
       logger.log("Toggling mute");
       event.preventDefault();
@@ -140,8 +144,7 @@ function addTheaterModeButton() {
       title: "Toggle Browser Fullscreen Mode",
       onclick: () => {
         logger.log("Toggling browser fullscreen mode");
-        const videoWrapper = getElementBySelector("#video-wrapper");
-        videoWrapper.classList.toggle("bttfc-using-browser-fullscreen-mode");
+        toggleFullscreen();
       },
     },
     span({ class: "vjs-icon-placeholder", "aria-hidden": "true" }),
@@ -174,7 +177,7 @@ export async function main(path: string): Promise<(() => void) | undefined> {
   teardowns.add(addBrowserFullscreenModeLoop());
   teardowns.add(
     insertStyle(`
-      #video-wrapper.bttfc-using-browser-fullscreen-mode {
+      .bttfc-using-browser-fullscreen-mode #video-wrapper {
         background: #000;
         position:fixed !important;
         inset: 0;
