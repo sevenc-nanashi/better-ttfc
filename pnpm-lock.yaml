@@ -4,15 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vitest: npm:@voidzero-dev/vite-plus-test@latest
-
-patchedDependencies:
-  vite-plugin-monkey@7.1.9:
-    hash: 5cddcdb786122412ea30778e8a9cf2b9f917cc1ae2aa7764ff91549b285daaf6
-    path: patches/vite-plugin-monkey@7.1.9.patch
-
 importers:
 
   .:
@@ -26,6 +17,9 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      vanjs-core:
+        specifier: ^1.6.0
+        version: 1.6.0
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -39,15 +33,12 @@ importers:
       esbuild:
         specifier: ^0.25.12
         version: 0.25.12
-      vanjs-core:
-        specifier: ^1.6.0
-        version: 1.6.0
       vite:
-        specifier: npm:@voidzero-dev/vite-plus-core@latest
+        specifier: npm:@voidzero-dev/vite-plus-core@^0.1.11
         version: '@voidzero-dev/vite-plus-core@0.1.11(@types/node@25.5.0)(esbuild@0.25.12)(typescript@5.9.3)'
       vite-plugin-monkey:
         specifier: ^7.1.9
-        version: 7.1.9(patch_hash=5cddcdb786122412ea30778e8a9cf2b9f917cc1ae2aa7764ff91549b285daaf6)(@voidzero-dev/vite-plus-core@0.1.11(@types/node@25.5.0)(esbuild@0.25.12)(typescript@5.9.3))(postcss@8.5.8)
+        version: 7.1.9(@voidzero-dev/vite-plus-core@0.1.11(@types/node@25.5.0)(esbuild@0.25.12)(typescript@5.9.3))(postcss@8.5.8)
       vite-plus:
         specifier: latest
         version: 0.1.11(@types/node@25.5.0)(@voidzero-dev/vite-plus-core@0.1.11(@types/node@25.5.0)(esbuild@0.25.12)(typescript@5.9.3))(esbuild@0.25.12)(typescript@5.9.3)
@@ -1667,7 +1658,7 @@ snapshots:
 
   vanjs-core@1.6.0: {}
 
-  vite-plugin-monkey@7.1.9(patch_hash=5cddcdb786122412ea30778e8a9cf2b9f917cc1ae2aa7764ff91549b285daaf6)(@voidzero-dev/vite-plus-core@0.1.11(@types/node@25.5.0)(esbuild@0.25.12)(typescript@5.9.3))(postcss@8.5.8):
+  vite-plugin-monkey@7.1.9(@voidzero-dev/vite-plus-core@0.1.11(@types/node@25.5.0)(esbuild@0.25.12)(typescript@5.9.3))(postcss@8.5.8):
     dependencies:
       acorn: 8.16.0
       acorn-walk: 8.3.5

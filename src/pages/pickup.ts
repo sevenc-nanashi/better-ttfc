@@ -110,8 +110,9 @@ export async function main(path: string): Promise<(() => void) | undefined> {
   }
   modLogger.log("Started");
 
-  setupHook();
   teardowns.add(await insertBetterContentListStyle());
 
   return () => teardowns.clear();
 }
+
+setupHook();

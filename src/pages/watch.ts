@@ -1,3 +1,4 @@
+import { insertXhrHook } from "@sevenc-nanashi/xhr-hook";
 import { baseLogger } from "../logger.ts";
 import {
   getElementBySelector,
@@ -188,3 +189,100 @@ export async function main(path: string): Promise<(() => void) | undefined> {
 
   return () => teardowns.clear();
 }
+
+// ブレイドとかはエピソード名が「第1話」みたいになってるので、番組表からエピソード名を取ってきて上書きする
+function setupEpisodeNameHook() {
+  interface ContentEpisodeResponse {
+    production_id: number;
+    production_title: string;
+    content_id: number;
+    content_type: number;
+    content_title: string;
+    thumbnail_url: string;
+    copyright: string;
+    episode_count: number;
+    episode_list: TtfcEpisode[];
+  }
+
+  interface TtfcEpisode {
+    episode_id: number;
+    thumbnail_url: string;
+    episode_title: string;
+    playback_status: number;
+    purchased_flag: boolean;
+    billing_required_flag: boolean;
+    age_limit: string;
+    original_age_limit: string;
+  }
+
+  interface ApiEpisode {
+    date: string;
+    durationMinutes: number;
+    episodeNumber: number;
+    title: string;
+  }
+
+  const logger = modLogger.withTag("setupEpisodeNameHook");
+  insertXhrHook("watch-episode-name", (request) => {
+    // https://pc.tokusatsu-fc.jp/api/pc/content_episode?content_id=1778&content_type=0
+    const url = new URL(request.url);
+    if (request.method === "GET" && url.pathname === "/api/pc/content_episode") {
+      return async () => {
+        logger.log("Intercepted content_episode API request, checking for missing episode names");
+        // NOTE: 空白が入っているのは仕様
+        const missingEpisodeNamePattern = /^第[0-9]+話  $/;
+        const response = await fetch(request);
+        if (!response.ok) {
+          logger.warn(`Failed to fetch episode data: ${response.status} ${response.statusText}`);
+          return response;
+        }
+        const data = (await response.json()) as ContentEpisodeResponse;
+
+        const isMissingEpisodeNames = data.episode_list.some((episode) =>
+          episode.episode_title.match(missingEpisodeNamePattern),
+        );
+        if (!isMissingEpisodeNames) {
+          logger.log("Episode names are already present, skipping");
+          return Response.json(data);
+        }
+        logger.log("Missing episode names detected, fetching from API");
+
+        const episodes = await fetch(
+          `https://better-ttfc-api.sevenc7c.workers.dev/episodes?name=${encodeURIComponent(
+            data.content_title,
+          )}`,
+        );
+
+        if (!episodes.ok) {
+          logger.warn(
+            `Failed to fetch episode names from API: ${episodes.status} ${episodes.statusText}`,
+          );
+          return Response.json(data);
+        }
+
+        logger.log("Fetched episode names from API, replacing missing episode titles");
+        const episodesData = (await episodes.json()) as { episodes: ApiEpisode[] };
+        for (const [i, episode] of data.episode_list.entries()) {
+          if (!episode.episode_title.match(missingEpisodeNamePattern)) {
+            continue;
+          }
+          const title = episode.episode_title;
+          const apiEpisode = episodesData.episodes.find(
+            (e: ApiEpisode) => e.episodeNumber === i + 1,
+          );
+
+          if (apiEpisode) {
+            episode.episode_title = `第${apiEpisode.episodeNumber}話 ${apiEpisode.title}`;
+            logger.log(`Replaced episode title "${title}" with "${apiEpisode.title}"`);
+          } else {
+            logger.warn(`Could not find episode title for episode number ${i + 1} (${title})`);
+          }
+        }
+
+        return Response.json(data);
+      };
+    }
+  });
+}
+
+setupEpisodeNameHook();
