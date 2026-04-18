@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Better TTFC
-// @version      0.1.3
+// @version      0.1.4
 // @author       Nanashi. <https://sevenc7c.com>
 // @description  東映特撮ファンクラブのPC版サイトをより便利にするためのユーザースクリプト。
 // @homepage     https://github.com/sevenc-nanashi/better-ttfc
@@ -4288,10 +4288,10 @@ var _ZodString = $constructor("_ZodString", (inst, def) => {
 	async function main$3(path) {
 		if (!matchUrl(path, "/pickup/[0-9]+")) return;
 		modLogger$2.log("Started");
-		setupHook();
 		teardowns$2.add(await insertBetterContentListStyle());
 		return () => teardowns$2.clear();
 	}
+	setupHook();
 	var modLogger$1 = baseLogger.withTag("root");
 	var teardowns$1 = new TeardownManager(modLogger$1);
 	async function waitForLoad() {
@@ -4584,6 +4584,45 @@ var _ZodString = $constructor("_ZodString", (inst, def) => {
     `));
 		return () => teardowns.clear();
 	}
+	function setupEpisodeNameHook() {
+		const logger = modLogger.withTag("setupEpisodeNameHook");
+		insertXhrHook("watch-episode-name", (request) => {
+			const url = new URL(request.url);
+			if (request.method === "GET" && url.pathname === "/api/pc/content_episode") return async () => {
+				logger.log("Intercepted content_episode API request, checking for missing episode names");
+				const missingEpisodeNamePattern = /^第[0-9]+話  $/;
+				const response = await fetch(request);
+				if (!response.ok) {
+					logger.warn(`Failed to fetch episode data: ${response.status} ${response.statusText}`);
+					return response;
+				}
+				const data = await response.json();
+				if (!data.episode_list.some((episode) => episode.episode_title.match(missingEpisodeNamePattern))) {
+					logger.log("Episode names are already present, skipping");
+					return Response.json(data);
+				}
+				logger.log("Missing episode names detected, fetching from API");
+				const episodes = await fetch(`https://better-ttfc-api.sevenc7c.workers.dev/episodes?name=${encodeURIComponent(data.content_title)}`);
+				if (!episodes.ok) {
+					logger.warn(`Failed to fetch episode names from API: ${episodes.status} ${episodes.statusText}`);
+					return Response.json(data);
+				}
+				logger.log("Fetched episode names from API, replacing missing episode titles");
+				const episodesData = await episodes.json();
+				for (const [i, episode] of data.episode_list.entries()) {
+					if (!episode.episode_title.match(missingEpisodeNamePattern)) continue;
+					const title = episode.episode_title;
+					const apiEpisode = episodesData.episodes.find((e) => e.episodeNumber === i + 1);
+					if (apiEpisode) {
+						episode.episode_title = `第${apiEpisode.episodeNumber}話 ${apiEpisode.title}`;
+						logger.log(`Replaced episode title "${title}" with "${apiEpisode.title}"`);
+					} else logger.warn(`Could not find episode title for episode number ${i + 1} (${title})`);
+				}
+				return Response.json(data);
+			};
+		});
+	}
+	setupEpisodeNameHook();
 	var mains = {
 		root: main$2,
 		pickup: main$3,
