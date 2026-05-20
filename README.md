@@ -1,5 +1,5 @@
 > [!WARNING]
-> [公式リニューアル](https://twitter.com/tokusatsu_fc/status/2056578088037654533に伴いメンテナンスを終了します。ありがとうございました。
+> [公式リニューアル](https://twitter.com/tokusatsu_fc/status/2056578088037654533)に伴いメンテナンスを終了します。ありがとうございました。
 
 # Better TTFC
 
