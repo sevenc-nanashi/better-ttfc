@@ -1,5 +1,3 @@
-import type { ConsolaInstance } from "consola";
-
 export function matchUrl(path: string, pattern: string): boolean {
   const regex = new RegExp(`^${pattern.replaceAll(".", "\\.").replaceAll("*", ".*")}(?:\\?.*)?$`);
   return regex.test(path);
@@ -67,26 +65,6 @@ export function insertStyle(css: string): () => void {
       style.parentElement.removeChild(style);
     }
   };
-}
-
-export class TeardownManager {
-  private teardowns: (() => void)[] = [];
-
-  constructor(private log: ConsolaInstance) {}
-
-  add(teardown: () => void): void {
-    this.teardowns.push(teardown);
-  }
-
-  clear(): void {
-    const logger = this.log.withTag("TeardownManager");
-    logger.log(`Running ${this.teardowns.length} teardowns`);
-    for (const teardown of this.teardowns) {
-      teardown();
-    }
-    this.teardowns.length = 0; // Clear teardowns
-    logger.log("All teardowns completed");
-  }
 }
 
 export function isChildrenOf(child: Node, parent: Node): boolean {

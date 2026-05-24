@@ -1,87 +1,31 @@
-import { insertXhrHook } from "@sevenc-nanashi/xhr-hook";
 import { baseLogger } from "../logger.ts";
 import {
   getElementBySelector,
   insertStyle,
-  isChildrenOf,
   matchUrl,
   maybeGetElementBySelector,
-  TeardownManager,
 } from "../utils.ts";
-import { insertBetterContentListStyle } from "./pickup.ts";
 import van from "vanjs-core";
+import type { ApiEpisode } from "./episodes.ts";
 
-const { button, span } = van.tags;
+const { button, p, div } = van.tags;
 
 const modLogger = baseLogger.withTag("watch");
-
-const watchedKey = "bttfcWatched";
-
-const teardowns = new TeardownManager(modLogger);
 
 function toggleFullscreen() {
   const mainElement = getElementBySelector("main");
   mainElement.classList.toggle("bttfc-using-browser-fullscreen-mode");
 }
 
-const originalSessionStorageSetItem = sessionStorage.setItem.bind(sessionStorage);
-function setupTeeWatchData() {
-  const logger = modLogger.withTag("setupTeeWatchData");
-  if (sessionStorage.bttfcHooked) {
-    logger.warn("SessionStorage is already hooked, skipping.");
-    return;
-  }
-
-  logger.log("Setting up watch data interception");
-  Object.getPrototypeOf(sessionStorage).setItem = new Proxy(
-    Object.getPrototypeOf(sessionStorage).setItem,
-    {
-      apply: (target, thisArg, args) => {
-        if (thisArg !== sessionStorage) {
-          return Reflect.apply(target, thisArg, args);
-        }
-        const [key, value] = args;
-        if (key === "watched") {
-          logger.log("Intercepted sessionStorage setItem for watched data");
-          localStorage.setItem(watchedKey, value);
-        }
-
-        return Reflect.apply(target, thisArg, args);
-      },
-    },
-  );
-  Object.getPrototypeOf(sessionStorage).bttfcHooked = true;
-}
-function loadWatchData() {
-  const logger = modLogger.withTag("loadWatchData");
-  const watched = localStorage.getItem(watchedKey);
-  if (!watched) {
-    logger.warn("No watched data found in localStorage");
-    return;
-  }
-
-  logger.log("Loading watched data from localStorage");
-  originalSessionStorageSetItem("watched", watched);
-}
-
 function addKeyboardShortcuts() {
   const logger = modLogger.withTag("addKeyboardShortcuts");
   logger.log("Adding keyboard shortcuts to video.js players");
-  document.addEventListener("keydown", onKeyDown, true);
-
-  return () => {
-    document.removeEventListener("keydown", onKeyDown, true);
-  };
+  const moviePlayer = getElementBySelector<HTMLDivElement>("#player-wrapper");
+  moviePlayer.addEventListener("keydown", onKeyDown);
+  moviePlayer.setAttribute("tabindex", "0");
 
   function onKeyDown(event: KeyboardEvent) {
-    const moviePlayer = maybeGetElementBySelector("#movie-player");
-    if (!moviePlayer) {
-      return;
-    }
-    if (!isChildrenOf(event.target as Node, moviePlayer)) {
-      return;
-    }
-    const video = getElementBySelector<HTMLVideoElement>("#movie-player_html5_api", moviePlayer);
+    const video = getElementBySelector<HTMLVideoElement>("#player-video_html5_api", moviePlayer);
     if (event.code === "ArrowRight") {
       logger.log("Seeking forward 10 seconds");
       event.preventDefault();
@@ -126,32 +70,49 @@ function addKeyboardShortcuts() {
 
 function addTheaterModeButton() {
   const logger = modLogger.withTag("addTheaterModeButton");
-  const controlBar = maybeGetElementBySelector(
-    ".vjs-control-bar:not(.bttfc-browser-fullscreen-mode-button)",
-  );
-  if (!controlBar) {
+  if (document.querySelector(".bttfc-browser-fullscreen-mode-button")) {
+    // すでに追加されている場合は何もしない
     return;
   }
-  const qualitySelector = maybeGetElementBySelector(".vjs-quality-selector");
-  if (!qualitySelector) {
+  const fullscreenBtn = maybeGetElementBySelector("#player-fullscreen-btn");
+  if (!fullscreenBtn) {
     // 画質選択ボタンは非同期的に追加されるので、存在しない場合はスキップして次の変化を待つ
+    return;
+  }
+  const controlBar = fullscreenBtn.parentElement;
+  if (!controlBar) {
+    logger.warn("Fullscreen button does not have a parent element, cannot add theater mode button");
     return;
   }
   const browserFullscreenModeButton = button(
     {
-      class: "vjs-icon-picture-in-picture-exit vjs-control vjs-button",
       type: "button",
-      "aria-disabled": "false",
-      title: "Toggle Browser Fullscreen Mode",
+      class: "transition-[opacity] relative group",
+      id: "player-browser-fullscreen-btn",
+
       onclick: () => {
-        logger.log("Toggling browser fullscreen mode");
         toggleFullscreen();
       },
     },
-    span({ class: "vjs-icon-placeholder", "aria-hidden": "true" }),
-    span({ class: "vjs-control-text", "aria-live": "polite" }, "Theater Mode"),
+    p(
+      {
+        id: "player-fullscreen-label",
+        class:
+          "opacity-0 group-hover:opacity-100 [.is-skip-visible_&]:!opacity-0 text-xs px-2 py-1 absolute top-[calc(100%+8px)] right-0 bg-ttfc-black/90 rounded-sm whitespace-nowrap duration-300 pointer-events-none",
+      },
+      "ブラウザ拡大",
+    ),
+    div(
+      {
+        type: "button",
+        "aria-disabled": "false",
+        title: "Toggle Browser Fullscreen Mode",
+        class: "w-6 h-6 group-hover:opacity-60 duration-300",
+      },
+      div({ class: "vjs-icon-picture-in-picture-exit", style: "top: 6px; position: relative;" }),
+    ),
   );
-  controlBar.insertBefore(browserFullscreenModeButton, qualitySelector.nextSibling);
+  controlBar.insertBefore(browserFullscreenModeButton, fullscreenBtn);
 
   controlBar.classList.add("bttfc-browser-fullscreen-mode-button");
   logger.log("Added browser fullscreen mode button to control bar");
@@ -167,122 +128,57 @@ function addBrowserFullscreenModeLoop() {
   };
 }
 
-export async function main(path: string): Promise<(() => void) | undefined> {
-  if (!matchUrl(path, "/contents")) {
-    return undefined;
+async function replaceTitle() {
+  const logger = modLogger.withTag("replaceTitle");
+  const playerSectionElement = getElementBySelector("div:has(#player-wrapper)");
+  const originalTitleElement = getElementBySelector("h1.text-ttfc-white", playerSectionElement);
+  const episodeNumberMatch = originalTitleElement.textContent?.trim().match(/^第([0-9]+)話$/);
+  if (!episodeNumberMatch) {
+    logger.info("Original title has proper episode name, skipping title replacement");
+    return;
   }
-  loadWatchData();
-  setupTeeWatchData();
-  teardowns.add(await insertBetterContentListStyle());
-  teardowns.add(addKeyboardShortcuts());
-  teardowns.add(addBrowserFullscreenModeLoop());
-  teardowns.add(
-    insertStyle(`
-      .bttfc-using-browser-fullscreen-mode #video-wrapper {
-        background: #000;
-        position:fixed !important;
-        inset: 0;
-        z-index:999;
-      }
-    `),
+  const episodeNumber = parseInt(episodeNumberMatch[1], 10);
+  const seriesTitleElement = getElementBySelector("#tracking-content-title");
+  const seriesTitle = seriesTitleElement.getAttribute("value") ?? "";
+  const response = await fetch(
+    `https://better-ttfc-api.sevenc7c.workers.dev/episodes?name=${encodeURIComponent(seriesTitle)}`,
   );
-
-  return () => teardowns.clear();
+  if (!response.ok) {
+    logger.warn(
+      `Failed to fetch episode names from API: ${response.status} ${response.statusText}, skipping title replacement`,
+    );
+    return;
+  }
+  const episodesData = (await response.json()) as { episodes: ApiEpisode[] };
+  const episodeData = episodesData.episodes.find(
+    (e: ApiEpisode) => e.episodeNumber === episodeNumber,
+  );
+  if (!episodeData) {
+    logger.warn(
+      `Could not find episode data for episode number ${episodeNumber}, skipping title replacement`,
+    );
+    return;
+  }
+  originalTitleElement.textContent = `第${episodeData.episodeNumber}話 ${episodeData.title}`;
+  logger.log(`Replaced title with episode name: "${episodeData.title}"`);
 }
 
-// ブレイドとかはエピソード名が「第1話」みたいになってるので、番組表からエピソード名を取ってきて上書きする
-function setupEpisodeNameHook() {
-  interface ContentEpisodeResponse {
-    production_id: number;
-    production_title: string;
-    content_id: number;
-    content_type: number;
-    content_title: string;
-    thumbnail_url: string;
-    copyright: string;
-    episode_count: number;
-    episode_list: TtfcEpisode[];
+export async function main(path: string): Promise<void> {
+  if (!matchUrl(path, "/movies/*/movie-stories/*")) {
+    return;
   }
+  addKeyboardShortcuts();
+  addBrowserFullscreenModeLoop();
+  void replaceTitle();
 
-  interface TtfcEpisode {
-    episode_id: number;
-    thumbnail_url: string;
-    episode_title: string;
-    playback_status: number;
-    purchased_flag: boolean;
-    billing_required_flag: boolean;
-    age_limit: string;
-    original_age_limit: string;
-  }
-
-  interface ApiEpisode {
-    date: string;
-    durationMinutes: number;
-    episodeNumber: number;
-    title: string;
-  }
-
-  const logger = modLogger.withTag("setupEpisodeNameHook");
-  insertXhrHook("watch-episode-name", (request) => {
-    // https://pc.tokusatsu-fc.jp/api/pc/content_episode?content_id=1778&content_type=0
-    const url = new URL(request.url);
-    if (request.method === "GET" && url.pathname === "/api/pc/content_episode") {
-      return async () => {
-        logger.log("Intercepted content_episode API request, checking for missing episode names");
-        // NOTE: 空白が入っているのは仕様
-        const missingEpisodeNamePattern = /^第[0-9]+話  $/;
-        const response = await fetch(request);
-        if (!response.ok) {
-          logger.warn(`Failed to fetch episode data: ${response.status} ${response.statusText}`);
-          return response;
-        }
-        const data = (await response.json()) as ContentEpisodeResponse;
-
-        const isMissingEpisodeNames = data.episode_list.some((episode) =>
-          episode.episode_title.match(missingEpisodeNamePattern),
-        );
-        if (!isMissingEpisodeNames) {
-          logger.log("Episode names are already present, skipping");
-          return Response.json(data);
-        }
-        logger.log("Missing episode names detected, fetching from API");
-
-        const episodes = await fetch(
-          `https://better-ttfc-api.sevenc7c.workers.dev/episodes?name=${encodeURIComponent(
-            data.content_title,
-          )}`,
-        );
-
-        if (!episodes.ok) {
-          logger.warn(
-            `Failed to fetch episode names from API: ${episodes.status} ${episodes.statusText}`,
-          );
-          return Response.json(data);
-        }
-
-        logger.log("Fetched episode names from API, replacing missing episode titles");
-        const episodesData = (await episodes.json()) as { episodes: ApiEpisode[] };
-        for (const [i, episode] of data.episode_list.entries()) {
-          if (!episode.episode_title.match(missingEpisodeNamePattern)) {
-            continue;
-          }
-          const title = episode.episode_title;
-          const apiEpisode = episodesData.episodes.find(
-            (e: ApiEpisode) => e.episodeNumber === i + 1,
-          );
-
-          if (apiEpisode) {
-            episode.episode_title = `第${apiEpisode.episodeNumber}話 ${apiEpisode.title}`;
-            logger.log(`Replaced episode title "${title}" with "${apiEpisode.title}"`);
-          } else {
-            logger.warn(`Could not find episode title for episode number ${i + 1} (${title})`);
-          }
-        }
-
-        return Response.json(data);
-      };
+  insertStyle(`
+    .bttfc-using-browser-fullscreen-mode #player-wrapper {
+      background: #000;
+      position:fixed !important;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index:999;
     }
-  });
+  `);
 }
-
-setupEpisodeNameHook();

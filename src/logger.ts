@@ -1,3 +1,3 @@
 import consola from "consola";
 
-export const baseLogger = consola.withTag("Better TTFC");
+export const baseLogger = consola.withTag("T-Two-FC");
