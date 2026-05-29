@@ -141,7 +141,7 @@ async function replaceTitle() {
   const seriesTitleElement = getElementBySelector("#tracking-content-title");
   const seriesTitle = seriesTitleElement.getAttribute("value") ?? "";
   const response = await fetch(
-    `https://better-ttfc-api.sevenc7c.workers.dev/episodes?name=${encodeURIComponent(seriesTitle)}`,
+    `https://t-two-f-c-api.sevenc7c.workers.dev/episodes?name=${encodeURIComponent(seriesTitle)}`,
   );
   if (!response.ok) {
     logger.warn(

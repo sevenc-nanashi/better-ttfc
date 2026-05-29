@@ -21,7 +21,7 @@
 ## インストール
 
 1. [Tampermonkey](https://www.tampermonkey.net/)を入れます。
-2. [ここ](https://raw.githubusercontent.com/sevenc-nanashi/better-ttfc/built/index.user.js) をクリックして、Tampermonkeyのダッシュボードに追加します。
+2. [ここ](https://raw.githubusercontent.com/sevenc-nanashi/t-two-f-c/built/index.user.js) をクリックして、Tampermonkeyのダッシュボードに追加します。
 
 ## 開発
 

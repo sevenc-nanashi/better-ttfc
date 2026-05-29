@@ -17,7 +17,7 @@ app.use(
 );
 
 app.get("/", (c) => {
-  return c.redirect("https://github.com/sevenc-nanashi/better-ttfc/tree/main/api");
+  return c.redirect("https://github.com/sevenc-nanashi/t-two-f-c/tree/main/api");
 });
 
 app.get(

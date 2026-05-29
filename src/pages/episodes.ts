@@ -29,7 +29,7 @@ async function replaceEpisodeNames() {
 
   const contentTitle = getElementBySelector("#tracking-content-title").getAttribute("value");
   const episodes = await fetch(
-    `https://better-ttfc-api.sevenc7c.workers.dev/episodes?name=${encodeURIComponent(contentTitle ?? "")}`,
+    `https://t-two-f-c-api.sevenc7c.workers.dev/episodes?name=${encodeURIComponent(contentTitle ?? "")}`,
   );
   if (!episodes.ok) {
     logger.warn(

@@ -1,8 +1,7 @@
 import { DOMParser, HTMLAnchorElement, HTMLTableCellElement, HTMLTableElement } from "linkedom";
 import { UnreachableError } from "./error";
 
-const userAgent =
-  "better-ttfc API/0.0.0 (https://github.com/sevenc-nanashi/better-ttfc/tree/main/api)";
+const userAgent = "t-two-f-c API/0.0.0 (https://github.com/sevenc-nanashi/t-two-f-c/tree/main/api)";
 
 export async function findProgramId(name: string): Promise<string | null> {
   const url = `https://cal.syoboi.jp/find?kw=${encodeURIComponent(name)}&exec=%E6%A4%9C%E7%B4%A2`;
