@@ -30,7 +30,7 @@ jobs:
       - name: Build
         run: |
           pnpm run build
-          cp dist/better-ttfc.user.js /tmp/index.user.js
+          cp dist/t-two-f-c.user.js /tmp/index.user.js
 
       - name: Commit
         run: |
